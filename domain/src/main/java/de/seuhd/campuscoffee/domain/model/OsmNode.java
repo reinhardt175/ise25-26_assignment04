@@ -10,7 +10,11 @@ import org.jspecify.annotations.NonNull;
  * @param nodeId The OpenStreetMap node ID.
  */
 @Builder
-public record OsmNode(@NonNull Long nodeId) {
-    // TODO: The OsmNode record currently only contains the node ID, but should be extended to include
+public record OsmNode(@NonNull Long nodeId,
+                      @NonNull Double latitude,
+                      @NonNull Double longitude,
+                      @Nullable String name,
+                      @Nullable String amenity) {
+
     //  all relevant fields for POS objects.
 }

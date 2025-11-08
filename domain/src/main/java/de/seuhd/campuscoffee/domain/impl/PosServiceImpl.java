@@ -79,25 +79,53 @@ public class PosServiceImpl implements PosService {
         return savedPos;
     }
 
+
+    /**
+     * Maps OSM amenity type to PosType.
+     */
+    private PosType mapAmenityToPosType(String amenity) {
+        if (amenity == null) return PosType.OTHER;
+
+        return switch (amenity.toLowerCase()) {
+            case "cafe" -> PosType.CAFE;
+            case "restaurant" -> PosType.RESTAURANT;
+            case "bar", "pub" -> PosType.BAR;
+            default -> PosType.OTHER;
+        };
+    }
+
+    /**
+     * Determines campus based on coordinates.
+     * Simplified implementation - should be refined with actual campus boundaries.
+     */
+    private CampusType determineCampus(Double latitude, Double longitude) {
+        // TODO: Implement proper geo-based campus detection
+        // Für jetzt: Default zu ALTSTADT
+        return CampusType.ALTSTADT;
+    }
+
     /**
      * Converts an OSM node to a POS domain object.
      * Note: This is a stub implementation and should be replaced with real mapping logic.
      */
     private @NonNull Pos convertOsmNodeToPos(@NonNull OsmNode osmNode) {
-        if (osmNode.nodeId().equals(5589879349L)) {
-            return Pos.builder()
-                    .name("Rada Coffee & Rösterei")
-                    .description("Caffé und Rösterei")
-                    .type(PosType.CAFE)
-                    .campus(CampusType.ALTSTADT)
-                    .street("Untere Straße")
-                    .houseNumber("21")
-                    .postalCode(69117)
-                    .city("Heidelberg")
-                    .build();
-        } else {
+        // Validierung: Pflichtfelder prüfen
+        if (osmNode.latitude() == null || osmNode.longitude() == null) {
             throw new OsmNodeMissingFieldsException(osmNode.nodeId());
         }
+
+        return Pos.builder()
+                .name(osmNode.name() != null ? osmNode.name() : "Unbekannt")
+                .description("Importiert von OpenStreetMap")
+                .type(mapAmenityToPosType(osmNode.amenity()))
+                .campus(determineCampus(osmNode.latitude(), osmNode.longitude()))
+                // TODO: Adressdaten aus OSM-Tags extrahieren (street, houseNumber, etc.)
+                .street(null)  // Noch nicht implementiert
+                .houseNumber(null)
+                .postalCode(null)
+                .city("Heidelberg")  // Default
+                .build();
+
     }
 
     /**
